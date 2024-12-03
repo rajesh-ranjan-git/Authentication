@@ -4,6 +4,7 @@ import "./App.css";
 import {
   doCreateUserWithEmailAndPassword,
   doSignInWithEmailAndPassword,
+  doSignInWithGoogle,
   doSignOut,
 } from "./firebase/auth";
 import { useState } from "react";
@@ -14,15 +15,27 @@ function App() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
+  const [errorState, setErrorState] = useState("");
 
   const handleLogin = () => {
     setLogin(!login);
     setSignup(false);
+    setErrorWhileLogin(false);
   };
 
   const handleSignup = () => {
     setSignup(!signup);
     setLogin(false);
+    setErrorWhileLogin(false);
+  };
+
+  const handleLoginWithGoogle = async () => {
+    const user = await doSignInWithGoogle();
+    if (!user) {
+      setErrorState("Error occurred while signing in with Google.");
+      console.log("Error occurred while signing in with Google.");
+    }
+    setUser(user);
   };
 
   const handleFormSubmit = async (e) => {
@@ -30,7 +43,11 @@ function App() {
 
     if (signup) {
       const user = await doCreateUserWithEmailAndPassword(email, password);
-      console.log(user);
+      console.log("User : ", user);
+      if (!user) {
+        setErrorState("User already exists.");
+        console.log("User already exists.");
+      }
       setUser(user);
       setLogin(false);
       setSignup(false);
@@ -38,11 +55,22 @@ function App() {
 
     if (login) {
       const user = await doSignInWithEmailAndPassword(email, password);
-      console.log(user);
+      if (!user) {
+        setErrorState("Email or password is incorrect.");
+        console.log("Email or password is incorrect.");
+      }
       setUser(user);
       setLogin(false);
       setSignup(false);
     }
+  };
+
+  const handleSignOut = async () => {
+    const user = await doSignOut();
+    console.log(user);
+    setUser(user);
+    setLogin(false);
+    setSignup(false);
   };
 
   return (
@@ -56,11 +84,17 @@ function App() {
         </a>
       </div>
       <h1>Vite + React + Firebase Authentication</h1>
+      {errorState && <h4>{errorState}</h4>}
       {!user && (
         <>
           <button onClick={() => handleLogin()}>Login</button>
-          &nbsp;&nbsp;&nbsp;&nbsp;
+          &nbsp;
           <button onClick={() => handleSignup()}>Signup</button>
+          <br />
+          <br />
+          <button onClick={() => handleLoginWithGoogle()}>
+            Login with Google
+          </button>
         </>
       )}
       {(login || signup) && (
@@ -100,7 +134,7 @@ function App() {
               {user.email}
             </p>
           </div>
-          <button onClick={() => doSignOut()}>Logout</button>
+          <button onClick={() => handleSignOut()}>Logout</button>
         </>
       )}
     </>
