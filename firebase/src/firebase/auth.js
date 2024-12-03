@@ -10,11 +10,23 @@ import {
 import { auth } from "./firebase.config";
 
 export const doCreateUserWithEmailAndPassword = async (email, password) => {
-  return createUserWithEmailAndPassword(auth, email, password);
+  try {
+    const data = await createUserWithEmailAndPassword(auth, email, password);
+    return data.user;
+  } catch (error) {
+    console.log("error : ", error);
+    return;
+  }
 };
 
 export const doSignInWithEmailAndPassword = async (email, password) => {
-  return signInWithEmailAndPassword(auth, email, password);
+  try {
+    const data = await signInWithEmailAndPassword(auth, email, password);
+    return data.user;
+  } catch (error) {
+    console.log("error : ", error);
+    return;
+  }
 };
 
 export const doSignInWithGoogle = async () => {
@@ -24,8 +36,14 @@ export const doSignInWithGoogle = async () => {
   return result;
 };
 
-export const doSignOut = () => {
-  return auth.signOut();
+export const doSignOut = async () => {
+  try {
+    const data = await auth.signOut();
+    return data;
+  } catch (error) {
+    console.log("error : ", error);
+    return;
+  }
 };
 
 export const doPasswordReset = (email) => {
